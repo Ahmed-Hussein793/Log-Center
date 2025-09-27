@@ -109,7 +109,7 @@
       try{
         const expr = document.getElementById("expression").value;
         const simplified = math.simplify(expr).toString();
-        resultDiv.innerHTML = `🔹 التبسيط: ${simplified}`;
+        resultDiv.innerHTML = `🔹 التبسيط: \n${simplified}`;
       }catch(e){ resultDiv.innerHTML = "⚠️ خطأ في الصياغة"; }
     }
 
@@ -126,7 +126,7 @@
             if(logMatch){
               const base = logMatch[1];
               const arg = logMatch[2];
-              resultDiv.innerHTML = `🔹 التحويل: ${base} ^ (${right}) = ${arg}`;
+              resultDiv.innerHTML = `🔹 التحويل: \n${base} ^ (${right}) = ${arg}`;
             } else {
               resultDiv.innerHTML = "⚠️ لم يتم التعرف على صيغة اللوغاريتم";
             }
@@ -155,10 +155,10 @@
         const eq = math.parse(expr);
         if(expr.includes("=")){
           const solutions = math.solve(eq, "x");
-          resultDiv.innerHTML = `🔹 الحل: x = ${solutions}`;
-          stepsDiv.innerHTML = `1️⃣ المعادلة: ${expr}<br>`;
+          resultDiv.innerHTML = `🔹 الحل: \nx = ${solutions}`;
+          stepsDiv.innerHTML = `1️⃣ المعادلة: \n${expr}<br>`;
           stepsDiv.innerHTML += `2️⃣ التحويل والتبسيط باستخدام اللوغاريتمات<br>`;
-          stepsDiv.innerHTML += `3️⃣ النتيجة: x = ${solutions}`;
+          stepsDiv.innerHTML += `3️⃣ النتيجة: x = \n${solutions}`;
         } else {
           resultDiv.innerHTML = "⚠️ ليست معادلة";
         }
