@@ -152,17 +152,74 @@
       stepsDiv.innerHTML = "";
       try{
         const expr = document.getElementById("expression").value;
-        const eq = math.parse(expr);
-        if(expr.includes("=")){
-          const solutions = math.solve(eq, "x");
-          resultDiv.innerHTML = `🔹 الحل: \nx = ${solutions}`;
-          stepsDiv.innerHTML = `1️⃣ المعادلة: \n${expr}<br>`;
-          stepsDiv.innerHTML += `2️⃣ التحويل والتبسيط باستخدام اللوغاريتمات<br>`;
-          stepsDiv.innerHTML += `3️⃣ النتيجة: x = \n${solutions}`;
-        } else {
+        if(!expr.includes("=")){
           resultDiv.innerHTML = "⚠️ ليست معادلة";
+          return;
         }
-      }catch(e){ resultDiv.innerHTML = "⚠️ لم أستطع الحل لهذه الصيغة"; }
+
+        const [left, right] = expr.split("=");
+        const eqNode = math.parse(`${left}-(${right})`);
+        const f = eqNode.compile();
+        let solutions = [];
+        let found = false;
+
+        const layerStep = 50;   // كل طبقة تكبر المجال 50
+        const maxLayer = 2000;  // أقصى نصف مجال [-2000,2000]
+        const initialStep = 5;  // خطوة البحث المبدئي
+
+        for(let layer=50; layer<=maxLayer; layer+=layerStep){
+          let a = -layer, b = layer;
+          let prevVal = null;
+          let scope = {};
+
+          for(let x=a; x<=b; x+=initialStep){
+            scope.x = x;
+            let val;
+            try { val = f.evaluate(scope); } catch { continue; }
+
+            if(prevVal!==null && val*prevVal < 0){
+              let approx = binarySearch(f, x-initialStep, x, 1e-5);
+              if(approx!==null && !solutions.includes(approx.toFixed(5))){
+                solutions.push(approx.toFixed(5));
+                found = true;
+                break; // وجد حل، نوقف الطبقات
+              }
+            }
+            prevVal = val;
+          }
+          if(found) break; // نوقف الطبقات إذا وجد الحل
+        }
+
+        if(solutions.length>0){
+          resultDiv.innerHTML = `🔹 الحل: x ≈ ${solutions[0]}`;
+          stepsDiv.innerHTML = `1️⃣ المعادلة: ${expr}<br>`;
+          stepsDiv.innerHTML += `2️⃣ البحث المتدرج بالطبقات حتى إيجاد الحل<br>`;
+          stepsDiv.innerHTML += `3️⃣ النتيجة: x ≈ ${solutions[0]}`;
+        } else {
+          resultDiv.innerHTML = "⚠️ لم أجد حلول في الطبقات المجرّبة";
+        }
+
+      } catch(e){
+        resultDiv.innerHTML = "⚠️ خطأ في الحل";
+      }
+    }
+
+    function binarySearch(f, a, b, tol){
+      let fa, fb, fm, m;
+      let scope = {};
+      scope.x = a; fa = f.evaluate(scope);
+      scope.x = b; fb = f.evaluate(scope);
+
+      if(fa*fb>0) return null;
+
+      for(let i=0;i<100;i++){
+        m = (a+b)/2;
+        scope.x = m;
+        fm = f.evaluate(scope);
+        if(Math.abs(fm)<tol) return m;
+        if(fa*fm<0){ b=m; fb=fm; } else { a=m; fa=fm; }
+      }
+      return m;
     }
 
     function toggleHelp(){
